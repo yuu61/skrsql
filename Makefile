@@ -46,7 +46,11 @@ install: download
 		install -d $$target; \
 		ln -svf "$$file" $$target/; \
 	done
-	@install -m 0755 $(DEST_DIR)/bin/list $(BIN_DIR)/
+	@if [ -n "$(LIST_SRC)" ]; then \
+		install -m 0755 "$(LIST_SRC)" "$(BIN_DIR)/list"; \
+	else \
+		echo "[WARN] 'list' script not found; please verify extraction"; \
+	fi
 	@cd $(BIN_DIR) && for cmd in can q drill; do ln -svf list $$cmd; done
 
 # Remove installation and symlinks
