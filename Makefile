@@ -19,11 +19,9 @@ setup: check
 
 # Verify psql and DB creation privileges
 check:
-	@echo -n "前提条件を確認中... "
-	@command -v psql >/dev/null 2>&1 || {
-		echo "[致命的] psql が PATH に見つかりません"; exit 1; }
-	@createdb $(TESTDB) >/dev/null 2>&1 && dropdb $(TESTDB) >/dev/null 2>&1 || {
-		echo "[致命的] パスワードなしで DB を作成できません"; exit 1; }
+	@echo -n "Checking prerequisites... "
+	@command -v psql >/dev/null 2>&1 || { echo "[致命的] psqlがPATHに見つかりません"; exit 1; }
+	@createdb $(TESTDB) >/dev/null 2>&1 && dropdb $(TESTDB) >/dev/null 2>&1 || { echo "[FATAL] パスワードなしでDBを作成できません"; exit 1; }
 	@echo "OK"
 
 # Download the release archive if missing
