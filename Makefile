@@ -42,7 +42,7 @@ install: download
 		exit 1; \
 	fi
 	@echo "$(DEST_DIR) にインストール中..."
-	@install -d $(DEST_DIR) $(BIN_DIR)
+	@mkdir -p $(DEST_DIR) $(BIN_DIR)
 	@unzip -o -q $(FILE) -d $(DEST_DIR)
 	@for file in $(DEST_DIR)/setup/chapae/*[0-9][0-9][0-9][0-9].sql; do \
 		chap=$$(basename $$file .sql | cut -c1-2); \
@@ -50,11 +50,7 @@ install: download
 		install -d $$target; \
 		ln -svf "$$file" $$target/; \
 	done
-	@if [ -n "$(LIST_SRC)" ]; then \
-		install -m 0755 "$(LIST_SRC)" "$(BIN_DIR)/list"; \
-	else \
-		echo "[警告] 'list' スクリプトが $(DEST_DIR); 以下に見つかりません。アーカイブの内容を確認してください"; \
-	fi
+	@install -m 0755 bin/list $(BIN_DIR)/
 	@cd $(BIN_DIR) && for cmd in list can q drill; do ln -svf list $$cmd; done
 
 # Remove installation and symlinks
