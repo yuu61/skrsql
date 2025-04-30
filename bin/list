@@ -29,15 +29,18 @@ if [ $# -lt 2 ]; then
 fi
 
 # パラメータ設定
-chapter=$(printf "chap%02d" "$1")
+orig_chap="$1"
+chapter=$(printf "chap%02d" "$orig_chap")
+chapnum=$(printf "%02d" "$orig_chap")
 shift 1
 
 script_base=""
 case $(basename "$0") in
   list)
     script_type="pre_list"
-    fmt="%02d%02d"
-    script_base=$(printf "$fmt" "$@")
+    # ファイル名は pre_list<章2桁><リスト番号2桁>.sql
+    # 例: list 2 1 → pre_list0201.sql
+    script_base=$(printf "%s%02d" "$chapnum" "$1")
     ;;
   can)
     script_type="pre_summary"
