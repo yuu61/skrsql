@@ -45,13 +45,12 @@ install: download
 	@mkdir -p $(DEST_DIR) $(BIN_DIR)
 	@unzip -o -q $(FILE) -d $(DEST_DIR)
 	@for file in $(DEST_DIR)/setup/chapae/*[0-9][0-9][0-9][0-9].sql; do \
-		chap=$$(basename $$file .sql | cut -c1-2); \
-		target=$(DEST_DIR)/chap$$chap; \
-		install -d $$target; \
+	chap=$$(basename $$file .sql | cut -c1-2); \
+	target=$(DEST_DIR)/setup/chap$$chap; \
 		ln -svf "$$file" $$target/; \
 	done
 	@install -m 0755 bin/list $(BIN_DIR)/
-	@cd $(BIN_DIR) && for cmd in list can q drill; do ln -svf list $$cmd; done
+	@@cd $(BIN_DIR) && for cmd in can q drill; do ln -svf list $$cmd; done
 
 # Remove installation and symlinks
 uninstall:
