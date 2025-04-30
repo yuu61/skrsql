@@ -15,7 +15,7 @@ all: setup
 
 # Quick sanity check before install
 setup: check
-	@echo "チェック完了、'make install' を実行してください"
+	@echo "チェック完了、'sudo make install' を実行してください"
 
 # Verify psql and DB creation privileges
 check:
@@ -48,6 +48,16 @@ install: download
 	chap=$$(basename $$file .sql | cut -c1-2); \
 	target=$(DEST_DIR)/setup/chap$$chap; \
 		ln -svf "$$file" $$target/; \
+	done
+	# setup 以下の全ての chapXX / chapa? ディレクトリを回してリンクを張る
+	@for dir in $(DEST_DIR)/setup/chap*; do \
+		for file in $$dir/*[0-9][0-9][0-9][0-9].sql; do \
+			# ディレクトリ名が chap01, chap02, … , chapac, chapad, chapae
+			chapter=$$(basename $$dir); \
+			# ルート直下に chapter ディレクトリを作ってリンク
+			install -d $(DEST_DIR)/$$chapter; \
+			ln -svf "$$file" $(DEST_DIR)/$$chapter/; \
+		done; \
 	done
 	@install -m 0755 bin/list $(BIN_DIR)/
 	@@cd $(BIN_DIR) && for cmd in can q drill; do ln -svf list $$cmd; done
