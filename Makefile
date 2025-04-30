@@ -49,9 +49,9 @@ install: download
 	@if [ -n "$(LIST_SRC)" ]; then \
 		install -m 0755 "$(LIST_SRC)" "$(BIN_DIR)/list"; \
 	else \
-		echo "[WARN] 'list' script not found; please verify extraction"; \
+		echo "[警告] 'list' スクリプトが $(DEST_DIR); 以下に見つかりません。アーカイブの内容を確認してください"; \
 	fi
-	@cd $(BIN_DIR) && for cmd in can q drill; do ln -svf list $$cmd; done
+	@cd $(BIN_DIR) && for cmd in list can q drill; do ln -svf list $$cmd; done
 
 # Remove installation and symlinks
 uninstall:
