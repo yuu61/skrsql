@@ -37,6 +37,10 @@ clean:
 
 # Install files, create directories, and symlinks
 install: download
+	@if [ "$$(id -u)" -ne 0 ]; then \
+		echo "[致命的] インストールにはルート権限が必要です。'sudo make install'"; \
+		exit 1; \
+	fi
 	@echo "$(DEST_DIR) にインストール中..."
 	@install -d $(DEST_DIR) $(BIN_DIR)
 	@unzip -o -q $(FILE) -d $(DEST_DIR)
@@ -55,6 +59,10 @@ install: download
 
 # Remove installation and symlinks
 uninstall:
+	@if [ "$$(id -u)" -ne 0 ]; then \
+		echo "[FATAL] アンインストールにはルート権限が必要です。'sudo make uninstall'"; \
+		exit 1; \
+	fi
 	@echo "アンインストール中..."
 	@rm -rf $(DEST_DIR)
 	@cd $(BIN_DIR) && for cmd in list can q drill; do rm -f $$cmd; done
