@@ -1,68 +1,93 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# -*- coding: utf-8 -*-
 
-DATA=/usr/local/share/ssql
-DB=Can
+# 環境設定
+export LANG=ja_JP.UTF-8
+export LC_ALL=ja_JP.UTF-8
 
+DATA_DIR="/usr/local/share/ssql"
+DB_NAME="Can"
+
+# ヘルプ表示
 usage() {
-  cat <<EOM >/dev/stderr
-使い方: $(basename $0) 番号1 番号2 [番号3]
-リスト 1-1 の場合: $(basename) 1 1
+  cat <<- EOM >&2
+  使い方: $(basename "$0") <チャプター番号> <番号2> [番号3] [番号4]
+  例: $(basename "$0") 1 1    # リスト1-1の場合
 EOM
+  exit 1
 }
 
-if [ "x$1" = "x" ]; then
+# エラー時にメッセージを表示して終了
+error_exit() {
+  echo "[ERROR] $1" >&2
+  exit 1
+}
+
+# 引数チェック
+if [ $# -lt 2 ]; then
   usage
 fi
 
-# チャプター番号
-chap=$(printf "chap%02d" $1)
+# パラメータ設定
+chapter=$(printf "chap%02d" "$1")
+shift 1
 
-f='%02d%02d'
-case $(basename $0) in
-list)
-  fmt="pre_list"
-  id=$(printf "${f}" $1 $2)
-  ;;
-can)
-  fmt="pre_summary"
-  f="%02d"
-  id=$(printf "${f}" $1)
-  ;;
-q)
-  fmt="pre_quizans"
-  id=$(printf "${f}" $1 $2)
-  ;;
-drill)
-  fmt="pre_quizapx"
-  f="%d"
-  id=$(printf "${f}" $1)
-  chap="chapac"
-  ;;
-*)
-  echo "未定義の形式です" >/dev/stderr
-  exit 1
-  ;;
+script_base=""
+case $(basename "$0") in
+  list)
+    script_type="pre_list"
+    fmt="%02d%02d"
+    script_base=$(printf "$fmt" "$@")
+    ;;
+  can)
+    script_type="pre_summary"
+    fmt="%02d"
+    script_base=$(printf "$fmt" "$1")
+    ;;
+  q)
+    script_type="pre_quizans"
+    fmt="%02d%02d"
+    script_base=$(printf "$fmt" "$@")
+    ;;
+  drill)
+    script_type="pre_quizapx"
+    fmt="%d"
+    script_base=$(printf "$fmt" "$1")
+    chapter="chapac"
+    ;;
+  *)
+    error_exit "未定義の形式: $(basename "$0")"
+    ;;
 esac
 
-#id=$(printf "${f}" $1 $2)
-
-[ ! "_$3" = '_' ] &&  id="${id}_$3"
-[ ! "_$4" = '_' ] &&  id="${id}_$4"
-
-DDL="${DATA}/setup/${chap}/${fmt}${id}.sql"
-
-if [ ! -f "${DDL}" ]; then
-  echo "問題データがありません(ファイル名 $(basename ${DDL}))" >/dev/stderr
-  exit 1
+# 番号拡張 (3番目以降)
+if [ -n "$2" ]; then
+  script_base+="_$2"
+fi
+if [ -n "$3" ]; then
+  script_base+="_$3"
 fi
 
-echo "問題ファイル: $(basename ${DDL})"
+DDL_FILE="$DATA_DIR/setup/$chapter/${script_type}${script_base}.sql"
 
-dropdb --if-exists ${DB} >/dev/null
+# ファイル存在チェック
+if [ ! -f "$DDL_FILE" ]; then
+  error_exit "問題データが見つかりません (ファイル: $(basename "$DDL_FILE"))"
+fi
 
-createdb ${DB}
-psql "${DB}" < "${DDL}" >/dev/null
-trap "echo 後処理中です; dropdb ${DB}" 0
-echo "--- psqlを起動しています: \q と入れれば終了です ---"
-echo "カーソルキーは使えません。テキストエディタなどでコマンドを流し込むことをおすすめします"
-psql -n "${DB}"
+# 処理開始メッセージ
+echo "問題ファイル: $(basename "$DDL_FILE")"
+
+# DB再作成
+dropdb --if-exists "$DB_NAME" >/dev/null 2>&1
+createdb "$DB_NAME" || error_exit "データベースの作成に失敗しました"
+
+# SQL実行
+psql "$DB_NAME" < "$DDL_FILE" >/dev/null 2>&1 || error_exit "SQL 実行に失敗しました"
+
+# 終了時にDBを削除
+trap 'echo "後処理: データベース "$DB_NAME" を削除中..."; dropdb "$DB_NAME"' EXIT
+
+echo "--- psql を起動します: 終了するには \q を入力 ---"
+echo "カーソルキーは利用できません。テキストエディタ等からコマンドを流し込むことを推奨します。"
+psql -n "$DB_NAME"

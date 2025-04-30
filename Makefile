@@ -1,42 +1,58 @@
-# v3.7.0
-URL=https://github.com/miyabilink/sukkiri-sql4-codes/releases/latest/download/sukkiri-sql4-codes.zip
-FILE=$(shell basename $(URL))
-DEST=/usr/local/share/ssql
-BIN=/usr/local/bin
+# Makefile v3.8.0
+# Refactored with improved checks, variables, and phony targets
 
+# --- Configuration ---
+URL := https://github.com/miyabilink/sukkiri-sql4-codes/releases/latest/download/sukkiri-sql4-codes.zip
+FILE := $(notdir $(URL))
+DEST_DIR := /usr/local/share/ssql
+BIN_DIR := /usr/local/bin
+TESTDB := testdb-$$$
+
+.PHONY: all setup check download clean install uninstall
+
+# Default target
 all: setup
 
-setup: check download
-	@echo "check OK, plase run 'make install'"
+# Quick sanity check before install
+setup: check
+	@echo "チェック完了、'make install' を実行してください"
 
-TESTDB=testdb-$$$$
-
+# Verify psql and DB creation privileges
 check:
-	@/bin/echo -n "check PATH..." #
-	@sh -c "type psql"
+	@echo -n "前提条件を確認中... "
+	@command -v psql >/dev/null 2>&1 || {
+		echo "[致命的] psql が PATH に見つかりません"; exit 1; }
+	@createdb $(TESTDB) >/dev/null 2>&1 && dropdb $(TESTDB) >/dev/null 2>&1 || {
+		echo "[致命的] パスワードなしで DB を作成できません"; exit 1; }
 	@echo "OK"
-	@if createdb $(TESTDB) </dev/null; then dropdb $(TESTDB); else echo "[FATAL] Unable to create DB without password, please check and retry."; fi
 
+# Download the release archive if missing
 download: $(FILE)
 
 $(FILE):
-	if [ ! -f $(shell basename $(URL)) ]; then curl -sL $(URL) > $(shell basename $(URL)); fi
+	@echo "$(URL) をダウンロード中..."
+	@curl -sfLo $@ $(URL)
 
+# Cleanup downloaded archive
 clean:
-	rm $(FILE)
+	@rm -f $(FILE)
 
+# Install files, create directories, and symlinks
 install: download
-	install -d $(DEST)
-	unzip -o -q $(FILE) -d $(DEST)
-	cd $(DEST)/setup/chapae; \
-	  for item in $$(ls -1 *[0-9][0-9][0-9][0-9].sql | egrep -o '[0-9]{4}.sql$$' | cut -d. -f1 | grep -o '^..' | sort -u); do \
-	    cd ../chap$${item}; \
-	    ln -sv ../chapae/*$${item}*.sql .; \
-	    cd -; \
-	  done
-	install -m 0755 bin/list $(BIN)/
-	cd $(BIN) && for i in can q drill; do ln -svf list $$i; done
+	@echo "$(DEST_DIR) にインストール中..."
+	@install -d $(DEST_DIR) $(BIN_DIR)
+	@unzip -o -q $(FILE) -d $(DEST_DIR)
+	@for file in $(DEST_DIR)/setup/chapae/*[0-9][0-9][0-9][0-9].sql; do \
+		chap=$$(basename $$file .sql | cut -c1-2); \
+		target=$(DEST_DIR)/chap$$chap; \
+		install -d $$target; \
+		ln -svf "$$file" $$target/; \
+	done
+	@install -m 0755 $(DEST_DIR)/bin/list $(BIN_DIR)/
+	@cd $(BIN_DIR) && for cmd in can q drill; do ln -svf list $$cmd; done
 
+# Remove installation and symlinks
 uninstall:
-	rm -fr $(DEST)
-	cd $(BIN) && for i in can q drill; do rm -f $$i; done; rm -f list
+	@echo "アンインストール中..."
+	@rm -rf $(DEST_DIR)
+	@cd $(BIN_DIR) && for cmd in list can q drill; do rm -f $$cmd; done
