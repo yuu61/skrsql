@@ -1,6 +1,9 @@
 > [!NOTE]
 フォーク元にあったアフィリエイトリンクは削除しています
 
+# Qiita
+[【学内向け？】skrsqlの環境構築 〜VirtualBoxアレルギーのあなたへ〜](https://qiita.com/yuu2461/items/6dc6a8e403cbfb17dadb)
+
 # このリポジトリは?
 
 株式会社フレアリンク様が出版されている「[スッキリわかるSQL入門第4版](https://sukkiri.jp/books/sukkiri_sql4)」購入者が利用できるダウンロードリソースを用いて、ローカルの環境でSQLの練習をおこなうツールのひとつです。
