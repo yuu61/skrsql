@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 set -eu
 
-# ベースディレクトリ
-BASE_DIR="/usr/local/share/ssql"
+# 共通ディレクトリ
+SHARE_DIR="/usr/local/share/ssql"
+SETUP_DIR="$SHARE_DIR/setup"
+BIN_DIR="/usr/local/bin"
 
 usage() {
   cat <<-EOF >&2
