@@ -1,0 +1,89 @@
+#!/usr/bin/env bash
+set -eu
+
+# ベースディレクトリ
+BASE_DIR="/usr/local/share/ssql/setup"
+
+usage() {
+  cat <<-EOF >&2
+Usage: $(basename "$0") <type> <args...>
+
+  types:
+    list     <章番号> <問番号>     → ${BASE_DIR}/listXX/pre_listXXYY.sql
+              第XX章 XX問目／本編掲載用のSQL文
+    summary  <章番号>             → ${BASE_DIR}/listXX/pre_summaryXX.sql
+              第XX章「できるようになったこと」掲載用のSQL文（list問題をすべて実行した後の状態）
+    quiz     <章番号> <問番号>     → ${BASE_DIR}/listXX/quizXXYY.sql
+              第XX章 章末練習問題掲載用のSQL文
+    quizans  <章番号> <問番号>     → ${BASE_DIR}/chapae/quizansXXYY.sql
+              第XX章 練習問題解答掲載用のSQL文
+    apxc     <問番号>             → ${BASE_DIR}/chapac/pre_quizapxN.sql
+              付録C.1 特訓ドリル（SQLドリル）第N問
+    apxd     <問番号>             → ${BASE_DIR}/chapad/pre_listadXX.sql
+              付録D データ分析 第XX問
+
+  例:
+    $0 list    1  1   → list01/pre_list0101.sql 実行 
+    $0 summary 3      → list03/pre_summary03.sql 実行
+    $0 quiz    2 10   → list02/quiz0210.sql 実行
+    $0 quizans 4  5   → chapae/quizans0405.sql 実行
+    $0 apxc    2      → chapac/pre_quizapx2.sql 実行
+    $0 apxd    7      → chapad/pre_listad07.sql 実行
+
+※setupのSQL文には先頭に「pre_」が付与されています。
+EOF
+  exit 1
+}
+
+# 引数チェック
+[[ $# -ge 2 ]] || usage
+
+TYPE=$1; shift
+
+# 0埋め関数
+pad2() { printf "%02d" "$1"; }
+case "$TYPE" in
+  list)
+    [[ $# -eq 2 ]] || usage
+    C=$(pad2 "$1"); Q=$(pad2 "$2")
+    SQL="$BASE_DIR/list${C}/pre_list${C}${Q}.sql"
+    ;;
+  summary)
+    [[ $# -eq 1 ]] || usage
+    C=$(pad2 "$1")
+    SQL="$BASE_DIR/list${C}/pre_summary${C}.sql"
+    ;;
+  quiz)
+    [[ $# -eq 2 ]] || usage
+    C=$(pad2 "$1"); Q=$(pad2 "$2")
+    SQL="$BASE_DIR/list${C}/quiz${C}${Q}.sql"
+    ;;
+  quizans)
+    [[ $# -eq 2 ]] || usage
+    C=$(pad2 "$1"); Q=$(pad2 "$2")
+    SQL="$BASE_DIR/chapae/quizans${C}${Q}.sql"
+    ;;
+  apxc)
+    [[ $# -eq 1 ]] || usage
+    Q="$1"
+    SQL="$BASE_DIR/chapac/pre_quizapx${Q}.sql"
+    ;;
+  apxd)
+    [[ $# -eq 1 ]] || usage
+    Q=$(pad2 "$1")
+    SQL="$BASE_DIR/chapad/pre_listad${Q}.sql"
+    ;;
+  *)
+    usage
+    ;;
+esac
+
+# ファイル存在チェック
+if [[ ! -f "$SQL" ]]; then
+  echo "Error: ファイルが見つかりません → $SQL" >&2
+  exit 2
+fi
+
+# 実行
+echo "==> Executing: $SQL"
+psql -f "$SQL"
