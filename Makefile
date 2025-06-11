@@ -6,7 +6,6 @@ URL      := https://github.com/miyabilink/sukkiri-sql4-codes/releases/latest/dow
 FILE     := $(notdir $(URL))
 DEST_DIR := /usr/local/share/ssql
 BIN_DIR  := /usr/local/bin
-# Makefile 内の $$ → シェル起動時に “$” に置き換え
 TESTDB   := testdb-$$
 
 .PHONY: all setup check download clean install uninstall
@@ -33,24 +32,16 @@ $(FILE):
 	@echo "$(URL) をダウンロード中..."
 	@curl -sfLo $@ $(URL)
 
-# Install files, create directories, symlinks, and set read-only permissions
+# Install files: unzip contents directly, set read-only permissions, install skrsql
 install: download
 	@if [ "$$(id -u)" -ne 0 ]; then \
 		echo "[致命的] インストールにはルート権限が必要です。'sudo make install'"; \
 		exit 1; \
 	fi
-	@echo "$(DEST_DIR) にインストール中..."
+	@echo "$(DEST_DIR) に展開中..."
 	@mkdir -p $(DEST_DIR) $(BIN_DIR)
 	@unzip -o -q $(FILE) -d $(DEST_DIR)
-
-	# setup 以下の chapu* ディレクトリにある .sql をまとめてリンク
-	@for dir in $(DEST_DIR)/setup/chapu*; do \
-		for file in $$dir/*[0-9][0-9][0-9][0-9].sql; do \
-			chapter=$$(basename $$dir); \
-			install -d $(DEST_DIR)/$$chapter; \
-			ln -svf "$$file" $(DEST_DIR)/$$chapter/; \
-		done; \
-	done
+	@echo "コピー完了: $(DEST_DIR) 以下に展開されたファイルをそのまま配置"
 
 	# ファイル・ディレクトリを読み取り専用に設定
 	@find $(DEST_DIR) -type d -exec chmod 755 {} \;
@@ -63,7 +54,7 @@ install: download
 clean:
 	@rm -f $(FILE)
 
-# Remove installation and symlinks
+# Remove installation and binary
 uninstall:
 	@if [ "$$(id -u)" -ne 0 ]; then \
 		echo "[致命的] アンインストールにはルート権限が必要です。'sudo make uninstall'"; \
