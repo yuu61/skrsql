@@ -85,7 +85,20 @@ if [[ ! -f "$SQL" ]]; then
   echo "Error: ファイルが見つかりません → $SQL" >&2
   exit 2
 fi
-# 実行
-echo "==> Executing: $SQL"
-psql -f "$SQL"
 
+# 処理開始メッセージ
+echo "問題ファイル: $(basename "$SQL")"
+
+# DB再作成
+dropdb --if-exists "$DB_NAME" >/dev/null 2>&1
+createdb "$DB_NAME" || error_exit "データベースの作成に失敗しました"
+
+# SQL実行
+psql "$DB_NAME" < "$SQL" >/dev/null 2>&1 || error_exit "SQL 実行に失敗しました"
+
+# 終了時にDBを削除
+trap 'echo "後処理: データベース "$DB_NAME" を削除中..."; dropdb "$DB_NAME"' EXIT
+
+echo "--- psql を起動します: 終了するには \q を入力 ---"
+echo "カーソルキーは利用できません。テキストエディタ等からコマンドを流し込むことを推奨します。"
+psql -n "$DB_NAME"
