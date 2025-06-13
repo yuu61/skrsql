@@ -58,12 +58,12 @@ case "$TYPE" in
   quiz)
     [[ $# -eq 2 ]] || usage
     C=$(pad2 "$1"); Q=$(pad2 "$2")
-    SQL="$SETUP_DIR/chap${C}/quiz${C}${Q}.sql"
+    SQL="$SETUP_DIR/chap${C}/pre_quiz${C}${Q}.sql"
     ;;
   quizans)
     [[ $# -eq 2 ]] || usage
     C=$(pad2 "$1"); Q=$(pad2 "$2")
-    SQL="$SHARE_DIR/chapae/quizans${C}${Q}.sql"
+    SQL="$SHARE_DIR/chapae/pre_quizans${C}${Q}.sql"
     ;;
   apxc)
     [[ $# -eq 1 ]] || usage
