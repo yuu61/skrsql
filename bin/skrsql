@@ -63,17 +63,17 @@ case "$TYPE" in
   quizans)
     [[ $# -eq 2 ]] || usage
     C=$(pad2 "$1"); Q=$(pad2 "$2")
-    SQL="$SHARE_DIR/chapae/pre_quizans${C}${Q}.sql"
+    SQL="$SETUP_DIR/chapae/pre_quizans${C}${Q}.sql"
     ;;
   apxc)
     [[ $# -eq 1 ]] || usage
     Q="$1"
-    SQL="$SHARE_DIR/chapac/pre_quizapx${Q}.sql"
+    SQL="$SETUP_DIR/chapac/pre_quizapx${Q}.sql"
     ;;
   apxd)
     [[ $# -eq 1 ]] || usage
     Q=$(pad2 "$1")
-    SQL="$SHARE_DIR/chapad/pre_listad${Q}.sql"
+    SQL="$SETUP_DIR/chapad/pre_listad${Q}.sql"
     ;;
   *)
     usage
