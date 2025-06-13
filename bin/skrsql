@@ -5,6 +5,7 @@ set -eu
 SHARE_DIR="/usr/local/share/ssql"
 SETUP_DIR="$SHARE_DIR/setup"
 BIN_DIR="/usr/local/bin"
+DB_NAME="Can"
 
 usage() {
   cat <<-EOF >&2
