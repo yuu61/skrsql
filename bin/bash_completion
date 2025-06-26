@@ -1,0 +1,31 @@
+# Bash Completion for skrsql
+# filepath: c:\repository\skrsql\bin\bash_completion
+
+_skrsql_completions()
+{
+    local cur prev opts
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+    opts="list summary quiz quizans apxc apxd"
+
+    if [[ ${COMP_CWORD} -eq 1 ]]; then
+        COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+    elif [[ ${COMP_CWORD} -eq 2 ]]; then
+        case "${prev}" in
+            list|summary|quiz|quizans|apxc|apxd)
+                COMPREPLY=( $(compgen -W "$(seq 1 99)" -- ${cur}) )
+                ;;
+        esac
+    elif [[ ${COMP_CWORD} -eq 3 ]]; then
+        case "${prev}" in
+            list|quiz|quizans)
+                COMPREPLY=( $(compgen -W "$(seq 1 99)" -- ${cur}) )
+                ;;
+        esac
+    fi
+
+    return 0
+}
+
+complete -F _skrsql_completions skrsql

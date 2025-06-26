@@ -33,7 +33,6 @@ Usage: $(basename "$0") <type> <args...>
     $0 apxc    2      → chapac/pre_quizapx2.sql 実行
     $0 apxd    7      → chapad/pre_listad07.sql 実行
 
-※setupのSQL文には先頭に「pre_」が付与されています。
 EOF
   exit 1
 }

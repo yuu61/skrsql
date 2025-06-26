@@ -50,6 +50,9 @@ install: download
 	# スクリプト本体を skrsql として配置
 	@install -m 0755 bin/skrsql $(BIN_DIR)/skrsql
 
+	# Bash Completion をインストール
+	@install -m 0644 bin/bash_completion /etc/bash_completion.d/skrsql
+
 # Cleanup downloaded archive
 clean:
 	@rm -f $(FILE)
@@ -63,3 +66,4 @@ uninstall:
 	@echo "アンインストール中..."
 	@rm -rf $(DEST_DIR)
 	@rm -f $(BIN_DIR)/skrsql
+	@rm -f /etc/bash_completion.d/skrsql
